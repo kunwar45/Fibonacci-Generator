@@ -1,0 +1,23 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t kunwar45/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run kunwar45/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t kunwar45/multi-client ./client
+    - docker build -t kunwar45/multi-nginx ./nginx
+    - docker build -t kunwar45/multi-server ./server
+    - docker build -t kunwar45/multi-worker ./worker
+
+    # Login to docker cli
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # Push to docker hub
+    - docker push kunwar45/mutli-client
+    - docker push kunwar45/mutli-nginx
+    - docker push kunwar45/mutli-server
+    - docker push kunwar45/mutli-worker
